@@ -2,13 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://example.org/posts/foss-android-apps/</loc>
-    <lastmod>2024-05-04T19:25:10+05:00</lastmod>
+    <loc>https://example.org/posts/minetest-server-behind-cgnat/</loc>
+    <lastmod>2024-05-11T18:22:35+05:00</lastmod>
   </url><url>
     <loc>https://example.org/posts/</loc>
-    <lastmod>2024-05-04T19:25:10+05:00</lastmod>
+    <lastmod>2024-05-11T18:22:35+05:00</lastmod>
   </url><url>
     <loc>https://example.org/</loc>
+    <lastmod>2024-05-11T18:22:35+05:00</lastmod>
+  </url><url>
+    <loc>https://example.org/posts/foss-android-apps/</loc>
     <lastmod>2024-05-04T19:25:10+05:00</lastmod>
   </url><url>
     <loc>https://example.org/categories/</loc>

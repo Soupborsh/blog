@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Minetest Server Behind CGNAT | Soupborsh&#39;s blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="Make the Minetest server publicly available I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.
+This will require: Remote server(VPS with public ipv4 or ipv6) I will refer to it as VPS Home server with internet connection I will refer to as homeserver *This should work with anything using UDP, even with TCP if you can configure iptables for it">
+<meta name="author" content="">
+<link rel="canonical" href="https://example.org/posts/minetest-server-behind-cgnat/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.b609c58d5c11bb90b1a54e04005d74ad1ddf22165eb79f5533967e57df9c3b50.css" integrity="sha256-tgnFjVwRu5CxpU4EAF10rR3fIhZet59VM5Z&#43;V9&#43;cO1A=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://example.org/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://example.org/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://example.org/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://example.org/apple-touch-icon.png">
+<link rel="mask-icon" href="https://example.org/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://example.org/posts/minetest-server-behind-cgnat/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+  
+
+<meta property="og:title" content="Minetest Server Behind CGNAT" />
+<meta property="og:description" content="Make the Minetest server publicly available I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.
+This will require: Remote server(VPS with public ipv4 or ipv6) I will refer to it as VPS Home server with internet connection I will refer to as homeserver *This should work with anything using UDP, even with TCP if you can configure iptables for it" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://example.org/posts/minetest-server-behind-cgnat/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-05-11T18:22:35+05:00" />
+<meta property="article:modified_time" content="2024-05-11T18:22:35+05:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Minetest Server Behind CGNAT"/>
+<meta name="twitter:description" content="Make the Minetest server publicly available I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.
+This will require: Remote server(VPS with public ipv4 or ipv6) I will refer to it as VPS Home server with internet connection I will refer to as homeserver *This should work with anything using UDP, even with TCP if you can configure iptables for it"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://example.org/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Minetest Server Behind CGNAT",
+      "item": "https://example.org/posts/minetest-server-behind-cgnat/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Minetest Server Behind CGNAT",
+  "name": "Minetest Server Behind CGNAT",
+  "description": "Make the Minetest server publicly available I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.\nThis will require: Remote server(VPS with public ipv4 or ipv6) I will refer to it as VPS Home server with internet connection I will refer to as homeserver *This should work with anything using UDP, even with TCP if you can configure iptables for it",
+  "keywords": [
+    
+  ],
+  "articleBody": "Make the Minetest server publicly available I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.\nThis will require: Remote server(VPS with public ipv4 or ipv6) I will refer to it as VPS Home server with internet connection I will refer to as homeserver *This should work with anything using UDP, even with TCP if you can configure iptables for it\nHow does this work? To make sure that people all over the internet will be able to connect to your home server which is behind CGNAT(Carrier Grade NAT) I decided to use WireGuard. This is working like this:\nMinetest server \u003c— homeserver \u003c— WireGuard tunnel \u003c— VPS \u003c— Client(Player)\nWe need to connect to the VPS using Wireguard. It creates virtual network devices on homeserver and VPS. These create local IPs on both ends, for example, these are outputs of ip a on homeserver and VPS after configuring everything.\nhomeserver:\n14: srv: mtu 1420 qdisc noqueue state UNKNOWN group default qlen 1000 link/none inet 10.66.66.2/32 scope global srv valid_lft forever preferred_lft forever inet6 fd42:42:42::2/128 scope global valid_lft forever preferred_lft forever VPS:\n3: wg0: mtu 8920 qdisc noqueue state UNKNOWN group default qlen 1000 link/none inet 10.66.66.1/24 scope global wg0 valid_lft forever preferred_lft forever inet6 fd42:42:42::1/64 scope global valid_lft forever preferred_lft forever 10.66.66.2 and fd42:42:42::2 are private vpn ips of homeserver. On a VPS we will redirect all incoming traffic going to VPS’s public ip on port 3000 on udp to 10.66.66.2 and fd42:42:42::2 aka homeserver.\nStep by step guide VPS: 1. Creating WireGuard config I decided to configure WireGuard using this wireguard-install script:\ncurl -O https://raw.githubusercontent.com/angristan/wireguard-install/master/wireguard-install.sh chmod +x wireguard-install.sh ./wireguard-install.sh Firstly it should promt you something like this:\nWelcome to the WireGuard installer! The git repository is available at: https://github.com/angristan/wireguard-install I need to ask you a few questions before starting the setup. You can keep the default options and just press enter if you are ok with them. IPv4 or IPv6 public address: public_vps_address Public interface: enp37s0 WireGuard interface name: wg0 Server WireGuard IPv4: 10.66.66.1 Server WireGuard IPv6: fd42:42:42::1 Server WireGuard port [1-65535]: 58838 First DNS resolver to use for the clients: 1.1.1.1 Second DNS resolver to use for the clients (optional): 1.0.0.1 ... Client configuration The client name must consist of alphanumeric character(s). It may also include underscores or dashes and can't exceed 15 chars. Client name: soupborsh Client WireGuard IPv4: 10.66.66.2 Client WireGuard IPv6: fd42:42:42::2 ... Here is your client config file as a QR Code: ... Your client config file is in /home/soupborsh/wg0-client-soupborsh.conf If you want to add more clients, you simply need to run this script another time! It automatically tries to detect your public ip and randomy generates everything else Change something if it is wrong or you do not like this value. I changed only public_vps_address to my real public ip address(I have used IPv6 but you can use IPv4 too).\nRemember the WireGuard port as well as Server(VPS) and Client(homeserver) IPs, as we will need them later.\n2. Configuring iptables The simplest way I found to redirect traffic from VPS to homeserver is using iptables. Run these commands replacing homeserver_private_vpn_ipv4 homeserver_private_vpn_ipv6 with your actual local vpn ipv4 and ipv6 of homeserver(in my case it is 10.66.66.2 and fd42:42:42::2).\nsudo iptables -t nat -A PREROUTING -p udp --dport 30000 -j DNAT --to-destination homeserver_private_vpn_ipv4:30000 sudo ip6tables -t nat -A PREROUTING -p udp --dport 30000 -j DNAT --to-destination [homeserver_private_vpn_ipv6]:30000 sudo iptables -t nat -A POSTROUTING -j MASQUERADE sudo ip6tables -t nat -A POSTROUTING -j MASQUERADE Make these rules persistent:\nsudo sh -c \"iptables-save \u003e /etc/iptables/rules.v4\" sudo sh -c \"ip6tables-save \u003e /etc/iptables/rules.v6\" Homeserver: 1. We need to copy WireGuard .conf files. It can be done with scp: sudo scp user@vps_public_ip:/path/to/conf/interface.conf /etc/wireguard/srv.conf Or like this if you use keys and a custom port:\nsudo scp -i /path/to/private/key -P ssh_port user@vps_public_ip:/path/to/conf/interface.conf /etc/wireguard/srv.conf Change /path/to/private/key, ssh_port, user, vps_public_ip and /path/to/conf/interface.conf to yours. Additionally, I set a name for the downloaded config to srv.conf instead of wg0-client-soupborsh.conf, due to that wg0-client-soupborsh.conf gave me issues. Rename it to your liking but I think you can use only lowercase English letters without hyphens and other symbols.\n2. Connect to WireGuard VPN. sudo wg-quick up srv Change srv to the name of your config file in /etc/wireguard/ without “.conf” at the end.\n3. Minetest server! If you want IPv6 support add this to the end of your minetest.conf:\nipv6_server = true Start or restart(firstly turn off using ctrl + c) your server:\nminetestserver Or by any other method you use to start and stop your Minetest server.\nI hope everything went well for you and you are enjoying your game! ",
+  "wordCount" : "781",
+  "inLanguage": "en",
+  "datePublished": "2024-05-11T18:22:35+05:00",
+  "dateModified": "2024-05-11T18:22:35+05:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://example.org/posts/minetest-server-behind-cgnat/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Soupborsh's blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://example.org/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://example.org/" accesskey="h" title="Soupborsh&#39;s blog (Alt + H)">Soupborsh&#39;s blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Minetest Server Behind CGNAT
+    </h1>
+    <div class="post-meta"><span title='2024-05-11 18:22:35 +0500 +05'>May 11, 2024</span>
+
+</div>
+  </header> 
+  <div class="post-content"><h2 id="make-the-minetest-server-publicly-available">Make the Minetest server publicly available<a hidden class="anchor" aria-hidden="true" href="#make-the-minetest-server-publicly-available">#</a></h2>
+<p>I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.</p>
+<h3 id="this-will-require">This will require:<a hidden class="anchor" aria-hidden="true" href="#this-will-require">#</a></h3>
+<ul>
+<li>Remote server(VPS with public ipv4 or ipv6) <em>I will refer to it as VPS</em></li>
+<li>Home server with internet connection <em>I will refer to as homeserver</em></li>
+</ul>
+<p>*<em>This should work with anything using UDP, even with TCP if you can configure iptables for it</em></p>
+<h2 id="how-does-this-work">How does this work?<a hidden class="anchor" aria-hidden="true" href="#how-does-this-work">#</a></h2>
+<p>To make sure that people all over the internet will be able to connect to your home server which is behind CGNAT(Carrier Grade NAT) I decided to use WireGuard. This is working like this:</p>
+<p>Minetest server &lt;&mdash; homeserver &lt;&mdash; WireGuard tunnel &lt;&mdash; VPS &lt;&mdash; Client(Player)</p>
+<p>We need to connect to the VPS using Wireguard. It creates virtual network devices on homeserver and VPS. These create local IPs on both ends, for example, these are outputs of
+<code>ip a</code> on homeserver and VPS after configuring everything.</p>
+<p>homeserver:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>14: srv: &lt;POINTOPOINT,NOARP,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">1420</span> qdisc noqueue state UNKNOWN group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/none 
+</span></span><span style="display:flex;"><span>    inet 10.66.66.2/32 scope global srv
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>    inet6 fd42:42:42::2/128 scope global 
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p>VPS:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>3: wg0: &lt;POINTOPOINT,NOARP,UP,LOWER_UP&gt; mtu <span style="color:#ae81ff">8920</span> qdisc noqueue state UNKNOWN group default qlen <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>    link/none 
+</span></span><span style="display:flex;"><span>    inet 10.66.66.1/24 scope global wg0
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span><span style="display:flex;"><span>    inet6 fd42:42:42::1/64 scope global 
+</span></span><span style="display:flex;"><span>       valid_lft forever preferred_lft forever
+</span></span></code></pre></div><p><code>10.66.66.2</code> and <code>fd42:42:42::2</code> are private vpn ips of homeserver. On a VPS we will redirect all incoming traffic going to VPS&rsquo;s public ip on port 3000 on udp to <code>10.66.66.2</code> and <code>fd42:42:42::2</code> aka homeserver.</p>
+<h2 id="step-by-step-guide">Step by step guide<a hidden class="anchor" aria-hidden="true" href="#step-by-step-guide">#</a></h2>
+<h4 id="vps">VPS:<a hidden class="anchor" aria-hidden="true" href="#vps">#</a></h4>
+<h4 id="1-creating-wireguard-config">1. Creating WireGuard config<a hidden class="anchor" aria-hidden="true" href="#1-creating-wireguard-config">#</a></h4>
+<p>I decided to configure WireGuard using this wireguard-install script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>curl -O https://raw.githubusercontent.com/angristan/wireguard-install/master/wireguard-install.sh
+</span></span><span style="display:flex;"><span>chmod +x wireguard-install.sh
+</span></span><span style="display:flex;"><span>./wireguard-install.sh
+</span></span></code></pre></div><p>Firstly it should promt you something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>Welcome to the WireGuard installer!
+</span></span><span style="display:flex;"><span>The git repository is available at: https://github.com/angristan/wireguard-install
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>I need to ask you a few questions before starting the setup.
+</span></span><span style="display:flex;"><span>You can keep the default options and just press enter <span style="color:#66d9ef">if</span> you are ok with them.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>IPv4 or IPv6 public address: public_vps_address
+</span></span><span style="display:flex;"><span>Public interface: enp37s0
+</span></span><span style="display:flex;"><span>WireGuard interface name: wg0
+</span></span><span style="display:flex;"><span>Server WireGuard IPv4: 10.66.66.1
+</span></span><span style="display:flex;"><span>Server WireGuard IPv6: fd42:42:42::1
+</span></span><span style="display:flex;"><span>Server WireGuard port <span style="color:#f92672">[</span>1-65535<span style="color:#f92672">]</span>: <span style="color:#ae81ff">58838</span>
+</span></span><span style="display:flex;"><span>First DNS resolver to use <span style="color:#66d9ef">for</span> the clients: 1.1.1.1
+</span></span><span style="display:flex;"><span>Second DNS resolver to use <span style="color:#66d9ef">for</span> the clients <span style="color:#f92672">(</span>optional<span style="color:#f92672">)</span>: 1.0.0.1
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>Client configuration
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>The client name must consist of alphanumeric character<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span>. It may also include underscores or dashes and can<span style="color:#960050;background-color:#1e0010">&#39;</span>t exceed <span style="color:#ae81ff">15</span> chars.
+</span></span><span style="display:flex;"><span>Client name: soupborsh
+</span></span><span style="display:flex;"><span>Client WireGuard IPv4: 10.66.66.2
+</span></span><span style="display:flex;"><span>Client WireGuard IPv6: fd42:42:42::2
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>Here is your client config file as a QR Code:
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>Your client config file is in /home/soupborsh/wg0-client-soupborsh.conf
+</span></span><span style="display:flex;"><span>If you want to add more clients, you simply need to run this script another time!
+</span></span></code></pre></div><p>It automatically tries to detect your public ip and randomy generates everything else
+Change something if it is wrong or you do not like this value. I changed only <code>public_vps_address</code> to my real public ip address(I have used IPv6 but you can use IPv4 too).</p>
+<p>Remember the WireGuard port as well as Server(VPS) and Client(homeserver) IPs, as we will need them later.</p>
+<h4 id="2-configuring-iptables">2. Configuring iptables<a hidden class="anchor" aria-hidden="true" href="#2-configuring-iptables">#</a></h4>
+<p>The simplest way I found to redirect traffic from VPS to homeserver is using iptables. Run these commands replacing <code>homeserver_private_vpn_ipv4</code> <code>homeserver_private_vpn_ipv6</code> with your actual local vpn ipv4 and ipv6 of homeserver(in my case it is 10.66.66.2 and fd42:42:42::2).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo iptables -t nat -A PREROUTING -p udp --dport <span style="color:#ae81ff">30000</span> -j DNAT --to-destination homeserver_private_vpn_ipv4:30000
+</span></span><span style="display:flex;"><span>sudo ip6tables -t nat -A PREROUTING -p udp --dport <span style="color:#ae81ff">30000</span> -j DNAT --to-destination <span style="color:#f92672">[</span>homeserver_private_vpn_ipv6<span style="color:#f92672">]</span>:30000
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo iptables -t nat -A POSTROUTING -j MASQUERADE
+</span></span><span style="display:flex;"><span>sudo ip6tables -t nat -A POSTROUTING -j MASQUERADE
+</span></span></code></pre></div><p>Make these rules persistent:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo sh -c <span style="color:#e6db74">&#34;iptables-save &gt; /etc/iptables/rules.v4&#34;</span>
+</span></span><span style="display:flex;"><span>sudo sh -c <span style="color:#e6db74">&#34;ip6tables-save &gt; /etc/iptables/rules.v6&#34;</span>
+</span></span></code></pre></div><h3 id="homeserver">Homeserver:<a hidden class="anchor" aria-hidden="true" href="#homeserver">#</a></h3>
+<h4 id="1-we-need-to-copy-wireguard-conf-files-it-can-be-done-with-scp">1. We need to copy WireGuard .conf files. It can be done with <code>scp</code>:<a hidden class="anchor" aria-hidden="true" href="#1-we-need-to-copy-wireguard-conf-files-it-can-be-done-with-scp">#</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo scp user@vps_public_ip:/path/to/conf/interface.conf /etc/wireguard/srv.conf
+</span></span></code></pre></div><p>Or like this if you use keys and a custom port:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo scp -i /path/to/private/key -P ssh_port user@vps_public_ip:/path/to/conf/interface.conf /etc/wireguard/srv.conf
+</span></span></code></pre></div><p>Change <code>/path/to/private/key</code>, <code>ssh_port</code>, <code>user</code>, <code>vps_public_ip</code> and <code>/path/to/conf/interface.conf</code> to yours. Additionally, I set a name for the downloaded config to <code>srv.conf</code> instead of <code>wg0-client-soupborsh.conf</code>, due to that <code>wg0-client-soupborsh.conf</code> gave me issues. Rename it to your liking but I think you can use only lowercase English letters without hyphens and other symbols.</p>
+<h4 id="2-connect-to-wireguard-vpn">2. Connect to WireGuard VPN.<a hidden class="anchor" aria-hidden="true" href="#2-connect-to-wireguard-vpn">#</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo wg-quick up srv
+</span></span></code></pre></div><p>Change <code>srv</code> to the name of your config file in <code>/etc/wireguard/</code> without &ldquo;.conf&rdquo; at the end.</p>
+<h4 id="3-minetest-server">3. Minetest server!<a hidden class="anchor" aria-hidden="true" href="#3-minetest-server">#</a></h4>
+<p>If you want IPv6 support add this to the end of your <code>minetest.conf</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span><span style="color:#a6e22e">ipv6_server</span> = <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div><p>Start or restart(firstly turn off using ctrl + c) your server:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>minetestserver
+</span></span></code></pre></div><p>Or by any other method you use to start and stop your Minetest server.</p>
+<h2 id="i-hope-everything-went-well-for-you-and-you-are-enjoying-your-game">I hope everything went well for you and you are enjoying your game!<a hidden class="anchor" aria-hidden="true" href="#i-hope-everything-went-well-for-you-and-you-are-enjoying-your-game">#</a></h2>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="https://example.org/">Soupborsh&#39;s blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

@@ -4,10 +4,18 @@
     <title>Posts on Soupborsh&#39;s blog</title>
     <link>https://example.org/posts/</link>
     <description>Recent content in Posts on Soupborsh&#39;s blog</description>
-    <generator>Hugo -- 0.125.5</generator>
+    <generator>Hugo -- 0.125.7</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 04 May 2024 19:25:10 +0500</lastBuildDate>
+    <lastBuildDate>Sat, 11 May 2024 18:22:35 +0500</lastBuildDate>
     <atom:link href="https://example.org/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Minetest Server Behind CGNAT</title>
+      <link>https://example.org/posts/minetest-server-behind-cgnat/</link>
+      <pubDate>Sat, 11 May 2024 18:22:35 +0500</pubDate>
+      <guid>https://example.org/posts/minetest-server-behind-cgnat/</guid>
+      <description>Make the Minetest server publicly available I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.
+This will require: Remote server(VPS with public ipv4 or ipv6) I will refer to it as VPS Home server with internet connection I will refer to as homeserver *This should work with anything using UDP, even with TCP if you can configure iptables for it</description>
+    </item>
     <item>
       <title>Foss Android Apps</title>
       <link>https://example.org/posts/foss-android-apps/</link>
