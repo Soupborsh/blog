@@ -2,25 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Posts on Soupborsh&#39;s blog</title>
-    <link>https://example.org/posts/</link>
+    <link>http://localhost:1313/posts/</link>
     <description>Recent content in Posts on Soupborsh&#39;s blog</description>
     <generator>Hugo -- 0.125.7</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 11 May 2024 18:22:35 +0500</lastBuildDate>
-    <atom:link href="https://example.org/posts/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Minetest Server Behind CGNAT</title>
-      <link>https://example.org/posts/minetest-server-behind-cgnat/</link>
+      <link>http://localhost:1313/posts/minetest-server-behind-cgnat/</link>
       <pubDate>Sat, 11 May 2024 18:22:35 +0500</pubDate>
-      <guid>https://example.org/posts/minetest-server-behind-cgnat/</guid>
+      <guid>http://localhost:1313/posts/minetest-server-behind-cgnat/</guid>
       <description>Make the Minetest server publicly available I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.
 This will require: Remote server(VPS with public ipv4 or ipv6) I will refer to it as VPS Home server with internet connection I will refer to as homeserver *This should work with anything using UDP, even with TCP if you can configure iptables for it</description>
     </item>
     <item>
       <title>Foss Android Apps</title>
-      <link>https://example.org/posts/foss-android-apps/</link>
+      <link>http://localhost:1313/posts/foss-android-apps/</link>
       <pubDate>Sat, 04 May 2024 19:25:10 +0500</pubDate>
-      <guid>https://example.org/posts/foss-android-apps/</guid>
+      <guid>http://localhost:1313/posts/foss-android-apps/</guid>
       <description>Best FOSS Android apps I used Android for a long time and found a lot of useful open source apps. All of them can be downloaded from F-Droid. I recommend Neo Store as F-Droid client. Some of this apps may use or require ROOT access.
 App management Neo Store Aurora Store App Manager DataBackup File manager Material files Keyboard HeliBoard Browsers Fennec Fulguris Tor Browser Sharing LocalSend KDE Connect Personal information Bitwarden Another Notes Mauth Photok Media Fossify gallery VLC mpv Audile Tuner Social media NewPipe RedReader Escapepod Element Tokodon ForPDA Wikipedia Mail K-9 Mail Proton Mail Documents &amp;amp; Books LibreOffice Viewer Collabora Office KOReader OSS Document Scanner Librera FD Weather omWeather Utilities AdAway Termux Kernel Flasher LogFox primitive ftpd ReVanced Manager Shelter SmartPack-Kernel Manager WireGuard KernelSU EasySSHFS CPU Info GLMark2 disky Graphics &amp;amp; Images Image Toolbox Krita Perspective Merge Photos Camera Open Camera Maps Organic Maps Games Minetest Mindustry Shattered Pixel Dungeon The Powder Toy SuperTuxKart Destination Soul Useful (no category) IR Remote Curriencies Moonlight phyphox </description>
     </item>

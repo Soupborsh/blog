@@ -6,21 +6,29 @@ draft = false
 
 ## Make the Minetest server publicly available
 
+Do you want to play Minetest(or any other game) with your friends on your server but unfortunately your ISP uses CGNAT? In this blog post I will explain how I bypassed this restriction and will show you what I did.
+
+#### Author:
 I am Soupborsh, I am not a GNU/Linux professional and can make mistakes, consequently, I am not responsible for any possible damage.
 
 ### This will require:
-- Remote server(VPS with public ipv4 or ipv6) *I will refer to it as VPS*
-- Home server with internet connection *I will refer to as homeserver*
+- Remote server(VPS with public ipv4 or ipv6) (*I will refer to it as VPS*)
+- Home server with internet connection (*I will refer to it as homeserver*)
 
 **This should work with anything using UDP, even with TCP if you can configure iptables for it*
+
+### My situation:
+My ISP uses CGNAT for IPv4 and blocks connections from Internet for IPv6.
+
+VPS OS: Ubuntu 22.04 LTS
 
 ## How does this work?
 
 To make sure that people all over the internet will be able to connect to your home server which is behind CGNAT(Carrier Grade NAT) I decided to use WireGuard. This is working like this:
 
-Minetest server <--- homeserver <--- WireGuard tunnel <--- VPS <--- Client(Player)
+Minetest server <-- homeserver <-- WireGuard tunnel <-- VPS <-- Internet <-- Client(Player)
 
-We need to connect to the VPS using Wireguard. It creates virtual network devices on homeserver and VPS. These create local IPs on both ends, for example, these are outputs of
+We need to connect to the VPS using Wireguard. It creates virtual network devices on homeserver and VPS. These have private IPs of other peer, for example, these are outputs of
 ```ip a``` on homeserver and VPS after configuring everything.
 
 homeserver:
@@ -57,7 +65,7 @@ chmod +x wireguard-install.sh
 ./wireguard-install.sh
 ```
 
-Firstly it should promt you something like this:
+It should promt you something like this:
 
 ```shell
 Welcome to the WireGuard installer!
@@ -94,7 +102,7 @@ Remember the WireGuard port as well as Server(VPS) and Client(homeserver) IPs, a
 
 #### 2. Configuring iptables
 
-The simplest way I found to redirect traffic from VPS to homeserver is using iptables. Run these commands replacing ```homeserver_private_vpn_ipv4``` ```homeserver_private_vpn_ipv6``` with your actual local vpn ipv4 and ipv6 of homeserver(in my case it is 10.66.66.2 and fd42:42:42::2).
+The simplest way I found to redirect traffic from VPS to homeserver is using iptables. Run these commands replacing ```homeserver_private_vpn_ipv4``` ```homeserver_private_vpn_ipv6``` with your actual private WireGuard ipv4 and ipv6 of homeserver(in my case it is 10.66.66.2 and fd42:42:42::2).
 
 ```shell
 sudo iptables -t nat -A PREROUTING -p udp --dport 30000 -j DNAT --to-destination homeserver_private_vpn_ipv4:30000
@@ -105,10 +113,49 @@ sudo ip6tables -t nat -A PREROUTING -p udp --dport 30000 -j DNAT --to-destinatio
 sudo iptables -t nat -A POSTROUTING -j MASQUERADE
 sudo ip6tables -t nat -A POSTROUTING -j MASQUERADE
 ```
+
 Make these rules persistent:
+
+```shell
+sudo apt install iptables-persistent
+```
+
 ```shell
 sudo sh -c "iptables-save > /etc/iptables/rules.v4"
 sudo sh -c "ip6tables-save > /etc/iptables/rules.v6"
+```
+
+#### 3. Opening ports
+
+We need to open WireGuard port and port for Minetest(default is 30000) on VPS to be able to connect to it from homeserver. I use ufw as my firewall. Change ```wireguard_port``` to the port of WireGuard we have set up earlier.
+
+```shell
+sudo ufw allow wireguard_port/udp
+sudo ufw allow 30000/udp
+sudo ufw reload
+```
+You can see which ports are open:
+```shell
+sudo ufw status
+```
+
+```shell
+Status: active
+
+To                         Action      From
+--                         ------      ----
+22/tcp                   ALLOW       Anywhere                  
+30000                      ALLOW       Anywhere                  
+58838/udp                  ALLOW       Anywhere                  
+22/tcp (v6)              ALLOW       Anywhere (v6)             
+30000 (v6)                 ALLOW       Anywhere (v6)             
+58838/udp (v6)             ALLOW       Anywhere (v6)
+```
+
+If it says that status is not active, enable ufw, but be sure that your ssh connection is allowed in it, due to that you can lose your ssh connection to your VPS like that you will have to have to login into your server localy as to regular PC without internet connection.
+
+```shell
+sudo ufw enable
 ```
 
 ### Homeserver:
@@ -117,7 +164,7 @@ sudo sh -c "ip6tables-save > /etc/iptables/rules.v6"
 ```shell
 sudo scp user@vps_public_ip:/path/to/conf/interface.conf /etc/wireguard/srv.conf
 ```
-Or like this if you use keys and a custom port:
+Or like this if you use keys and a custom ssh port:
 ```shell
 sudo scp -i /path/to/private/key -P ssh_port user@vps_public_ip:/path/to/conf/interface.conf /etc/wireguard/srv.conf
 ```
